@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:nyoba/models/NotificationModel.dart';
 import 'package:nyoba/models/ProductModel.dart';
@@ -12,9 +13,9 @@ import 'package:nyoba/utils/notification_text.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shimmer/shimmer.dart';
+
 import '../../AppLocalizations.dart';
 import '../../utils/utility.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class NotificationScreen extends StatefulWidget {
   NotificationScreen({Key key}) : super(key: key);
@@ -26,8 +27,7 @@ class NotificationScreen extends StatefulWidget {
 class _NotificationScreenState extends State<NotificationScreen> {
   int selectedIndex = 0;
   int cartCount = 0;
-  RefreshController _refreshController =
-      RefreshController(initialRefresh: false);
+  RefreshController _refreshController = RefreshController(initialRefresh: false);
 
   @override
   void initState() {
@@ -37,8 +37,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
   load() async {
     if (Session.data.getBool('isLogin')) {
-      await Provider.of<NotificationProvider>(context, listen: false)
-          .fetchNotifications();
+      await Provider.of<NotificationProvider>(context, listen: false).fetchNotifications();
       _refreshController.refreshCompleted();
     }
     loadCartCount();
@@ -51,24 +50,15 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
     if (Session.data.containsKey('cart')) {
       List listCart = await json.decode(Session.data.getString('cart'));
-
-      productCart = listCart
-          .map((product) => new ProductModel.fromJson(product))
-          .toList();
-
-      productCart.forEach((element) {
-        _count += element.cartQuantity;
-      });
+      productCart = listCart.map((product) => new ProductModel.fromJson(product)).toList();
+      productCart.forEach((element) => _count += element.cartQuantity);
     }
-    setState(() {
-      cartCount = _count;
-    });
+    setState(() => cartCount = _count);
   }
 
   @override
   Widget build(BuildContext context) {
-    final notification =
-        Provider.of<NotificationProvider>(context, listen: false);
+    final notification = Provider.of<NotificationProvider>(context, listen: false);
     Widget buildNotification = Container(
       child: ListenableProvider.value(
         value: notification,
@@ -76,9 +66,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           if (value.isLoading) {
             return ListView.separated(
               shrinkWrap: true,
-              itemBuilder: (context, i) {
-                return GestureDetector(onTap: null, child: itemShimmer());
-              },
+              itemBuilder: (context, i) => GestureDetector(onTap: null, child: itemShimmer()),
               itemCount: 6,
               separatorBuilder: (BuildContext context, int index) {
                 return Container(
@@ -96,13 +84,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
             itemBuilder: (context, i) {
               return GestureDetector(
                   onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => OrderDetail(
-                                  orderId:
-                                      value.notification[i].orderId.toString(),
-                                )));
+                    String orderId = value.notification[i].orderId.toString();
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => OrderDetail(orderId: orderId)));
                   },
                   child: itemList(value.notification[i]));
             },
@@ -134,10 +117,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
             children: [
               Text(
                 AppLocalizations.of(context).translate('notification'),
-                style: TextStyle(
-                    color: Colors.black,
-                    fontSize: responsiveFont(16),
-                    fontWeight: FontWeight.w500),
+                style: TextStyle(color: Colors.black, fontSize: responsiveFont(16), fontWeight: FontWeight.w500),
               ),
             ],
           ),
@@ -145,12 +125,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
         actions: [
           InkWell(
             onTap: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => CartScreen(
-                            isFromHome: false,
-                          )));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => CartScreen(isFromHome: false)));
             },
             child: Container(
               width: 65,
@@ -158,25 +133,18 @@ class _NotificationScreenState extends State<NotificationScreen> {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  Icon(
-                    Icons.shopping_cart,
-                    color: Colors.black,
-                  ),
+                  Icon(Icons.shopping_cart, color: Colors.black),
                   Positioned(
                     right: 0,
                     top: 7,
                     child: Container(
                       padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                          shape: BoxShape.circle, color: primaryColor),
+                      decoration: BoxDecoration(shape: BoxShape.circle, color: primaryColor),
                       alignment: Alignment.center,
                       child: Text(
                         cartCount.toString(),
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: responsiveFont(9),
-                        ),
+                        style: TextStyle(color: Colors.white, fontSize: responsiveFont(9)),
                       ),
                     ),
                   )
@@ -190,12 +158,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
           ? SmartRefresher(
               controller: _refreshController,
               onRefresh: load,
-              child: Container(
-                  margin: EdgeInsets.all(15), child: buildNotification),
+              child: Container(margin: EdgeInsets.all(15), child: buildNotification),
             )
-          : Center(
-              child: buildNoAuth(context),
-            ),
+          : Center(child: buildNoAuth(context)),
     );
   }
 
@@ -212,24 +177,15 @@ class _NotificationScreenState extends State<NotificationScreen> {
               width: 80.h,
               height: 80.h,
               child: notification.image == null
-                  ? Icon(
-                      Icons.broken_image_outlined,
-                      size: 80,
-                    )
+                  ? Icon(Icons.broken_image_outlined, size: 80)
                   : Image.network(
                       notification.image,
-                      errorBuilder: (BuildContext context, Object exception,
-                          StackTrace stackTrace) {
-                        return Icon(
-                          Icons.broken_image_outlined,
-                          size: 128,
-                        );
+                      errorBuilder: (BuildContext context, Object exception, StackTrace stackTrace) {
+                        return Icon(Icons.broken_image_outlined, size: 128);
                       },
                     ),
             ),
-            SizedBox(
-              width: 15,
-            ),
+            SizedBox(width: 15),
             Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -240,57 +196,36 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     children: [
                       Text(
                         buildNotificationTitle(notification.status, context),
-                        style: TextStyle(
-                            fontSize: responsiveFont(10),
-                            fontWeight: FontWeight.w500),
+                        style: TextStyle(fontSize: responsiveFont(10), fontWeight: FontWeight.w500),
                       ),
-                      SizedBox(
-                        width: 5,
-                      ),
+                      SizedBox(width: 5),
                       RichText(
                         text: TextSpan(
                           style: TextStyle(color: Colors.black),
                           children: <TextSpan>[
                             TextSpan(
-                                text:
-                                    '${AppLocalizations.of(context).translate('order_with_number')} ',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w300,
-                                    fontSize: responsiveFont(9))),
+                                text: '${AppLocalizations.of(context).translate('order_with_number')} ',
+                                style: TextStyle(fontWeight: FontWeight.w300, fontSize: responsiveFont(9))),
                             TextSpan(
                                 text: notification.orderId.toString(),
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w300,
-                                    fontSize: responsiveFont(9),
-                                    color: primaryColor)),
+                                style: TextStyle(fontWeight: FontWeight.w300, fontSize: responsiveFont(9), color: primaryColor)),
                             TextSpan(
-                                text: buildNotificationSubtitle(
-                                    notification.status, context),
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w300,
-                                    fontSize: responsiveFont(9))),
+                                text: buildNotificationSubtitle(notification.status, context),
+                                style: TextStyle(fontWeight: FontWeight.w300, fontSize: responsiveFont(9))),
                           ],
                         ),
                       ),
-                      SizedBox(
-                        height: 5,
-                      ),
+                      SizedBox(height: 5),
                     ],
                   ),
-                  SizedBox(
-                    height: 20.h,
-                  ),
+                  SizedBox(height: 20.h),
                   Row(
                     children: [
                       Icon(Icons.query_builder),
-                      SizedBox(
-                        width: 5,
-                      ),
+                      SizedBox(width: 5),
                       Text(
                         notification.createdAt,
-                        style: TextStyle(
-                            fontSize: responsiveFont(8),
-                            fontWeight: FontWeight.w300),
+                        style: TextStyle(fontSize: responsiveFont(8), fontWeight: FontWeight.w300),
                       )
                     ],
                   )
@@ -311,16 +246,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(5),
-                    color: Colors.white,
-                  ),
+                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(5), color: Colors.white),
                   width: 80.h,
                   height: 80.h,
                 ),
-                SizedBox(
-                  width: 15,
-                ),
+                SizedBox(width: 15),
                 Expanded(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -329,46 +259,20 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
-                            width: 150,
-                            height: 10,
-                            color: Colors.white,
-                          ),
-                          SizedBox(
-                            height: 10,
-                          ),
-                          Container(
-                            width: double.infinity,
-                            height: 10,
-                            color: Colors.white,
-                          ),
-                          SizedBox(
-                            height: 5,
-                          ),
-                          Container(
-                            width: double.infinity,
-                            height: 10,
-                            color: Colors.white,
-                          ),
-                          SizedBox(
-                            height: 5,
-                          ),
+                          Container(width: 150, height: 10, color: Colors.white),
+                          SizedBox(height: 10),
+                          Container(width: double.infinity, height: 10, color: Colors.white),
+                          SizedBox(height: 5),
+                          Container(width: double.infinity, height: 10, color: Colors.white),
+                          SizedBox(height: 5),
                         ],
                       ),
-                      SizedBox(
-                        height: 20.h,
-                      ),
+                      SizedBox(height: 20.h),
                       Row(
                         children: [
                           Icon(Icons.query_builder),
-                          SizedBox(
-                            width: 5,
-                          ),
-                          Container(
-                            width: 100,
-                            height: 10,
-                            color: Colors.white,
-                          ),
+                          SizedBox(width: 5),
+                          Container(width: 100, height: 10, color: Colors.white),
                         ],
                       )
                     ],
